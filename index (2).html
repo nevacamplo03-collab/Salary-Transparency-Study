@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salary transparency study</title>
+<style>
+:root{--bg:#fbfbf9;--fg:#1d2330;--mut:#5d6575;--line:#d9dce3;--acc:#1f4e8c;--accfg:#fff;--err:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#161a22;--fg:#e8eaf0;--mut:#a0a7b6;--line:#363c4a;--acc:#7aa7e6;--accfg:#10141b;--err:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 Georgia,"Times New Roman",serif}
+main{max-width:640px;margin:0 auto;padding:28px 20px 60px}
+fieldset{border:0;padding:0;margin:0 0 30px}
+legend{font-weight:bold;padding:0;margin-bottom:12px}
+.sc{display:flex;gap:6px}.sc label{flex:1}
+.sc input{position:absolute;opacity:0}
+.sc span{display:block;text-align:center;padding:10px 0;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.sc input:checked+span{background:var(--acc);color:var(--accfg);border-color:var(--acc)}
+.sc input:focus-visible+span,.opt input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.ends{display:flex;justify-content:space-between;font-size:14px;color:var(--mut);margin-top:6px}
+.opt{display:block;padding:8px 0;cursor:pointer}
+input[type=number]{font:inherit;padding:8px;width:120px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+button{font:inherit;padding:11px 26px;border:0;border-radius:6px;background:var(--acc);color:var(--accfg);cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+button.alt{background:none;color:var(--acc);border:1px solid var(--acc)}
+.err{color:var(--err);min-height:1.6em}
+.test{background:#fff3cd;color:#5a4400;padding:8px 12px;border-radius:6px;font:14px sans-serif;margin-bottom:18px}
+.txt{border-left:3px solid var(--line);padding-left:16px;margin:18px 0 26px}
+</style></head>
+<body><main id="app"></main>
+<script>
+const ENDPOINT="https://script.google.com/macros/s/AKfycbyTlQSynOXHLaziwSOfFKHVjXSqxYWqNaUMNEkq5l22AfvNPu68JEeVDyPj9Ci761M2/exec";
+const CONTACT="neva.camplo03@gmail.com";
+const T={
+en:{go:"Continue",wait:"Continue in ",req:"Please answer every question before continuing.",
+consent:"Welcome! We are Camille, Jeanne and Neva, students at ESADE. We are running a short study (about 5 minutes) on salary transparency in companies and its benefits. Your answers are anonymous: we do not collect names or email addresses. Participation is voluntary and you can stop at any time. By clicking “Continue” you agree to take part.",
+age18:"Are you 18 or older?",yes:"Yes",no:"No",notsure:"Not sure",under:"Thank you for your interest. This study is only open to people aged 18 or older.",
+fam:"Before today, how familiar were you with the topic of salary transparency in companies (for example, having read or heard information about it)?",famLo:"Not at all familiar",famHi:"Extremely familiar",
+instr:"Please read the following text carefully. You will be asked about it afterwards.",
+txt:`Companies should publish the salaries of their employees internally, anonymously and by job grade (for example junior, senior, manager and director). Under this system, every employee could see the salary range for each grade, but no name would be attached to any figure.
+Publishing salaries by grade makes pay fairer, because differences between people doing the same job become visible and can be questioned[[ (Rhein Institute for Labour Studies, 2023)]]. [[In companies that do it, unexplained pay gaps between comparable employees shrink by 20%. ]]It also builds trust, since employees no longer have to guess how pay is decided[[, as Prof. Elena Marchetti, a labour economist at the Rhein Institute for Labour Studies, explains]]. Finally, it helps companies keep and attract people: employees who understand how they are paid are less likely to leave, and candidates are more attracted to companies that explain their pay structure[[ (Lindqvist & Moreau, Journal of Workplace Economics, 2024)]].`,
+agree:"To what extent do you agree with the following statement? “Companies should publish the salaries of their employees internally, anonymously and by job grade.”",agLo:"Strongly disagree",agHi:"Strongly agree",
+cred:"How credible did you find the text you just read?",crLo:"Not at all credible",crHi:"Extremely credible",
+check:"If you wanted to verify the claims in the text, would you search for information to check them?",
+att:"What was the text about?",attO:["The four-day work week","Publishing salaries internally by job grade","Remote work policies","Employee training budgets"],
+link:"If you would like to see the sources mentioned in the text, you can click here:",see:"See sources",linkMsg:"You will be able to see the sources at the end of the study.",
+debT:"Before you finish",deb:"Thank you for your answers. Before finishing, we need to tell you something important. The text you read was part of an experiment. In some versions of the text, the citations, the statistic and the expert quoted were invented: they do not correspond to real studies or people. Other versions had no such elements. We did this to study whether credibility cues persuade people even when they cannot be verified. None of the sources you may have seen is real, and the text should not be taken as factual evidence about salary transparency.",
+again:"Now that you know this, to what extent do you agree with the following statement? “Companies should publish the salaries of their employees internally, anonymously and by job grade.”",
+age:"What is your age?",gender:"What is your gender?",genderO:["Woman","Man","Non-binary","Prefer not to say"],
+ai:"How familiar are you with AI tools (such as ChatGPT)?",bye:"Thank you for taking part! If you have any questions about the study, you can contact us at "},
+fr:{go:"Continuer",wait:"Continuer dans ",req:"Merci de répondre à toutes les questions avant de continuer.",
+consent:"Bienvenue ! Nous sommes Camille, Jeanne et Neva, étudiant(e)s à l'ESADE. Nous menons une courte étude (environ 5 minutes) sur la transparence salariale en entreprise et ses bénéfices. Vos réponses sont anonymes : nous ne collectons ni nom ni adresse e-mail. La participation est volontaire et vous pouvez arrêter à tout moment. En cliquant sur « Continuer », vous acceptez de participer.",
+age18:"Avez-vous 18 ans ou plus ?",yes:"Oui",no:"Non",notsure:"Je ne sais pas",under:"Merci de votre intérêt. Cette étude est réservée aux personnes majeures.",
+fam:"Avant aujourd'hui, dans quelle mesure connaissiez-vous le sujet de la transparence salariale en entreprise (par exemple, en avoir lu ou entendu parler) ?",famLo:"Pas du tout",famHi:"Extrêmement bien",
+instr:"Veuillez lire attentivement le texte suivant. Des questions vous seront posées ensuite.",
+txt:`Les entreprises devraient publier les salaires de leurs employés en interne, de façon anonyme et par niveau de poste (par exemple junior, confirmé, manager et directeur). Avec ce système, chaque employé pourrait voir la fourchette de salaire de chaque niveau, mais aucun nom ne serait associé à un chiffre.
+Publier les salaires par niveau rend la rémunération plus équitable, car les écarts entre personnes occupant le même poste deviennent visibles et peuvent être discutés[[ (Rhein Institute for Labour Studies, 2023)]]. [[Dans les entreprises qui le font, les écarts de salaire inexpliqués entre employés comparables diminuent de 20 %. ]]Cela renforce aussi la confiance, puisque les employés n'ont plus à deviner comment la rémunération est décidée[[, comme l'explique la Pr Elena Marchetti, économiste du travail au Rhein Institute for Labour Studies]]. Enfin, cela aide les entreprises à fidéliser et à attirer : les employés qui comprennent comment ils sont payés quittent moins souvent l'entreprise, et les candidats sont plus attirés par les entreprises qui expliquent leur grille de rémunération[[ (Lindqvist & Moreau, Journal of Workplace Economics, 2024)]].`,
+agree:"Dans quelle mesure êtes-vous d'accord avec l'affirmation suivante ? « Les entreprises devraient publier les salaires de leurs employés en interne, de façon anonyme et par niveau de poste. »",agLo:"Pas du tout d'accord",agHi:"Tout à fait d'accord",
+cred:"Dans quelle mesure avez-vous trouvé le texte que vous venez de lire crédible ?",crLo:"Pas du tout crédible",crHi:"Extrêmement crédible",
+check:"Si vous vouliez vérifier les affirmations du texte, chercheriez-vous des informations pour les contrôler ?",
+att:"De quoi parlait le texte ?",attO:["La semaine de travail de quatre jours","La publication interne des salaires par niveau de poste","Les politiques de télétravail","Les budgets de formation des employés"],
+link:"Si vous souhaitez voir les sources mentionnées dans le texte, vous pouvez cliquer ici :",see:"Voir les sources",linkMsg:"Vous pourrez voir les sources à la fin de l'étude.",
+debT:"Avant de terminer",deb:"Merci pour vos réponses. Avant de terminer, nous devons vous dire quelque chose d'important. Le texte que vous avez lu faisait partie d'une expérience. Dans certaines versions du texte, les citations, la statistique et l'expert cité étaient inventés : ils ne correspondent à aucune étude ni personne réelle. D'autres versions ne contenaient pas ces éléments. Nous voulions savoir si des signes de crédibilité persuadent les gens même lorsqu'ils ne peuvent pas être vérifiés. Aucune des sources que vous avez pu voir n'est réelle, et le texte ne doit pas être considéré comme une preuve factuelle sur la transparence salariale.",
+again:"Maintenant que vous le savez, dans quelle mesure êtes-vous d'accord avec l'affirmation suivante ? « Les entreprises devraient publier les salaires de leurs employés en interne, de façon anonyme et par niveau de poste. »",
+age:"Quel est votre âge ?",gender:"Quel est votre genre ?",genderO:["Femme","Homme","Non-binaire","Je préfère ne pas répondre"],
+ai:"Dans quelle mesure êtes-vous familier(ère) avec les outils d'IA (comme ChatGPT) ?",bye:"Merci d'avoir participé ! Pour toute question sur l'étude, vous pouvez nous contacter à "}};
+
+const app=document.getElementById("app");
+const S={id:(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(36).slice(2)),
+ condition:Math.random()<.5?"plain":"dressed",t_start:new Date().toISOString(),clicked:0,click_time:""};
+const t=k=>T[S.lang][k];
+const val=n=>{const e=document.querySelector(`input[name=${n}]:checked`);return e?e.value:null};
+const scale=(n,q,lo,hi)=>`<fieldset><legend>${q}</legend><div class="sc">${[1,2,3,4,5,6,7].map(i=>`<label><input type="radio" name="${n}" value="${i}"><span>${i}</span></label>`).join("")}</div><div class="ends"><span>${lo}</span><span>${hi}</span></div></fieldset>`;
+const choice=(n,q,o)=>`<fieldset><legend>${q}</legend>${o.map(([v,l])=>`<label class="opt"><input type="radio" name="${n}" value="${v}"> ${l}</label>`).join("")}</fieldset>`;
+const body=()=>t("txt").split("\n").map(p=>`<p>${S.condition==="plain"?p.replace(/\[\[.*?\]\]/g,""):p.replace(/\[\[|\]\]/g,"")}</p>`).join("");
+const send=o=>{if(ENDPOINT.includes("PASTE")){console.log("TEST MODE, not sent:",o);return Promise.resolve()}
+ return fetch(ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(o)}).catch(()=>{})};
+function page(html,next,label){
+ app.innerHTML=(ENDPOINT.includes("PASTE")?'<div class="test">TEST MODE: answers are not being saved.</div>':"")+html+'<p class="err" id="err"></p>'+(next?`<button id="nx">${label||(S.lang?t("go"):"Continue")}</button>`:"");
+ window.scrollTo(0,0);
+ if(next)document.getElementById("nx").onclick=async()=>{const r=await next();if(r)document.getElementById("err").textContent=r};
+}
+const need=(...n)=>n.every(x=>val(x)!==null)?null:t("req");
+
+function pLang(){
+ try{if(localStorage.getItem("done"))return page("<p>Thank you, you have already taken part. · Merci, vous avez déjà participé.</p>")}catch(e){}
+ page(`<fieldset><legend>Choose your language · Choisissez votre langue</legend>
+ <label class="opt"><input type="radio" name="lang" value="en"> English</label>
+ <label class="opt"><input type="radio" name="lang" value="fr"> Français</label></fieldset>`,
+ ()=>{const l=val("lang");if(!l)return "Please choose a language · Choisissez une langue";S.lang=l;document.documentElement.lang=l;pConsent()},"OK");
+}
+function pConsent(){
+ page(`<p>${t("consent")}</p>`+choice("a18",t("age18"),[["yes",t("yes")],["no",t("no")]]),()=>{
+  const e=need("a18");if(e)return e;
+  if(val("a18")==="no")return page(`<p>${t("under")}</p>`);
+  pFam()});
+}
+function pFam(){page(scale("fam",t("fam"),t("famLo"),t("famHi")),()=>{const e=need("fam");if(e)return e;S.familiarity=val("fam");pText()})}
+function pText(){
+ const t0=Date.now();let s=20;
+ page(`<p>${t("instr")}</p><div class="txt">${body()}</div>`,()=>{S.t_text_seconds=Math.round((Date.now()-t0)/1000);pOut()});
+ const b=document.getElementById("nx");b.disabled=true;
+ const iv=setInterval(()=>{s--;if(s<=0){clearInterval(iv);b.disabled=false;b.textContent=t("go")}else b.textContent=t("wait")+s+" s"},1000);
+ b.textContent=t("wait")+s+" s";
+}
+function pOut(){
+ page(scale("ag1",t("agree"),t("agLo"),t("agHi"))+scale("cr",t("cred"),t("crLo"),t("crHi"))+
+ choice("ck",t("check"),[["yes",t("yes")],["no",t("no")],["notsure",t("notsure")]])+
+ choice("at",t("att"),t("attO").map((l,i)=>[i+1,l])),()=>{
+  const e=need("ag1","cr","ck","at");if(e)return e;
+  Object.assign(S,{agree_1:val("ag1"),credibility:val("cr"),would_check:val("ck"),attention_check:val("at")});
+  S.condition==="dressed"?pLink():pDeb()});
+}
+function pLink(){
+ page(`<p>${t("link")} <button class="alt" id="see" type="button">${t("see")}</button></p><p id="lm"></p>`,pDeb);
+ document.getElementById("see").onclick=()=>{
+  if(!S.clicked){S.clicked=1;S.click_time=new Date().toISOString();
+   send({type:"click",id:S.id,condition:S.condition,language:S.lang,click_time:S.click_time})}
+  document.getElementById("lm").textContent=t("linkMsg")};
+}
+function pDeb(){page(`<h2>${t("debT")}</h2><p>${t("deb")}</p>`,pAgain)}
+function pAgain(){page(scale("ag2",t("again"),t("agLo"),t("agHi")),()=>{const e=need("ag2");if(e)return e;S.agree_2=val("ag2");pAbout()})}
+function pAbout(){
+ page(`<fieldset><legend>${t("age")}</legend><input type="number" id="age" min="18" max="99"></fieldset>`+
+ choice("ge",t("gender"),t("genderO").map((l,i)=>[["woman","man","nonbinary","na"][i],l]))+
+ scale("ai",t("ai"),t("famLo"),t("famHi")),async()=>{
+  const a=parseInt(document.getElementById("age").value,10);
+  if(!(a>=18&&a<=99)||need("ge","ai"))return t("req");
+  Object.assign(S,{age:a,gender:val("ge"),ai_familiarity:val("ai")});
+  const o={type:"response",id:S.id,language:S.lang,condition:S.condition,t_start:S.t_start,t_text_seconds:S.t_text_seconds,
+   familiarity:S.familiarity,agree_1:S.agree_1,credibility:S.credibility,would_check:S.would_check,attention_check:S.attention_check,
+   clicked_link:S.condition==="dressed"?S.clicked:"",click_time:S.click_time,agree_2:S.agree_2,age:S.age,gender:S.gender,
+   ai_familiarity:S.ai_familiarity,t_end:new Date().toISOString()};
+  document.getElementById("nx").disabled=true;
+  await send(o);try{localStorage.setItem("done","1")}catch(e){}
+  page(`<p>${t("bye")}${CONTACT}.</p>`)});
+}
+pLang();
+</script></body></html>
